@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperGames | Catálogo</title>
+
+<!-- Fonte chamativa -->
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --play-btn-bg: #2ecc71;
+    --play-btn-text: white;
+    --card-aura: linear-gradient(135deg, #a64ca6, #4ca6ff);
+}
+
+/* Reset básico */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(to bottom, #000000 0%, #1a1a2e 50%, #000000 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    font-family: 'Orbitron', sans-serif;
+}
+
+/* Cabeçalho */
+header {
+    width: 100%;
+    padding: 20px;
+    text-align: center;
+    font-size: 3em;
+    font-weight: 700;
+    color: #00ffff;
+    text-shadow: 0 0 10px #4ca6ff, 0 0 20px #a64ca6;
+}
+
+/* Grid de jogos */
+.game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    width: 100%;
+    max-width: 960px;
+}
+
+/* Card de jogo */
+.game-card {
+    background-color: rgba(0,0,0,0.9);
+    border-radius: 15px;
+    position: relative;
+    text-align: center;
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    height: 250px;
+    box-shadow: 0 0 15px 2px #a64ca6, 0 0 25px 5px #4ca6ff;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+/* Hover efeito */
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px 4px #a64ca6, 0 0 30px 8px #4ca6ff;
+}
+
+/* Imagem do jogo */
+.game-card img {
+    width: 90%;
+    max-height: calc(100% - 50px);
+    object-fit: contain;
+    margin-top: 5px;
+}
+
+/* Rodapé do card com nome */
+.game-card-footer {
+    width: 100%;
+    height: 50px;
+    background-color: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.game-card-footer h3 {
+    font-size: 1.1em;
+    color: #00ffff;
+    text-shadow: 0 0 5px #4ca6ff, 0 0 10px #a64ca6;
+}
+
+/* Overlay play */
+.play-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+    flex-direction: column;
+}
+
+.play-overlay.active {
+    opacity: 1;
+}
+
+.play-overlay button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 10px;
+    background-color: var(--play-btn-bg);
+    color: var(--play-btn-text);
+    font-weight: bold;
+    font-size: 1em;
+    cursor: pointer;
+}
+
+/* Cards indisponíveis */
+.unavailable-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    position: relative;
+}
+
+/* Interrogação */
+.unavailable-card::after {
+    content: "?";
+    font-size: 3em;
+    line-height: 1;
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-shadow: 0 0 10px #a64ca6, 0 0 20px #4ca6ff;
+}
+
+/* GUI jogo indisponível */
+#unavailable-gui {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.85);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+#unavailable-gui.active {
+    visibility: visible;
+    opacity: 1;
+}
+
+#unavailable-gui .gui-box {
+    width: 80%;
+    max-width: 320px;
+    background-color: #000;
+    border: 3px solid #a64ca6;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    transform: scale(0.8);
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 0 20px 4px #4ca6ff, 0 0 15px 2px #a64ca6;
+}
+
+#unavailable-gui.active .gui-box {
+    transform: scale(1);
+}
+
+#unavailable-gui .gui-box p {
+    margin-bottom: 20px;
+    font-weight: 700;
+    font-size: 1.3em;
+    color: #00ffff;
+    text-shadow: 0 0 5px #4ca6ff, 0 0 10px #a64ca6;
+}
+
+#unavailable-gui .gui-box button {
+    padding: 10px 20px;
+    background-color: #2ecc71;
+    border: none;
+    border-radius: 12px;
+    color: black;
+    font-weight: bold;
+    font-size: 1em;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+#unavailable-gui .gui-box button:hover {
+    transform: scale(1.1);
+}
+
+/* Responsividade mobile */
+@media (max-width: 768px) {
+    .game-card {
+        height: 220px;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-card {
+        height: 200px;
+    }
+}
+</style>
+</head>
+<body>
+
+<header>SuperGames</header>
+
+<div class="game-grid" id="game-grid">
+
+    <!-- Jogo disponível -->
+    <div class="game-card available" onclick="openPlay(this)">
+        <img src="../ola/IMG_20251201_070810.png" alt="Bloxd.io">
+        <div class="game-card-footer">
+            <h3>Bloxd.io</h3>
+        </div>
+        <div class="play-overlay">
+            <button onclick="goToGame(event,'/bloxd/index.html')">Play</button>        </div>
+    </div>
+
+    <!-- Jogos indisponíveis -->
+    <div class="game-card unavailable-card" onclick="openUnavailable()">
+        <div class="game-card-footer"><h3>Jogo Futuro</h3></div>
+    </div>
+    <div class="game-card unavailable-card" onclick="openUnavailable()">
+        <div class="game-card-footer"><h3>Jogo Futuro</h3></div>
+    </div>
+    <div class="game-card unavailable-card" onclick="openUnavailable()">
+        <div class="game-card-footer"><h3>Jogo Futuro</h3></div>
+    </div>
+    <div class="game-card unavailable-card" onclick="openUnavailable()">
+        <div class="game-card-footer"><h3>Jogo Futuro</h3></div>
+    </div>
+    <div class="game-card unavailable-card" onclick="openUnavailable()">
+        <div class="game-card-footer"><h3>Jogo Futuro</h3></div>
+    </div>
+</div>
+
+<!-- GUI jogo indisponível -->
+<div id="unavailable-gui">
+    <div class="gui-box">
+        <p>Jogo ainda não disponível</p>
+        <button onclick="closeUnavailable()">OK</button>
+    </div>
+</div>
+
+<script>
+// Abrir overlay play
+function openPlay(card){
+    const overlays = document.querySelectorAll('.play-overlay');
+    overlays.forEach(o=>o.classList.remove('active'));
+    const overlay = card.querySelector('.play-overlay');
+    overlay.classList.add('active');
+}
+
+// Abrir jogo
+function goToGame(event, url){
+    event.stopPropagation();
+    window.location.href = url;
+}
+
+// Abrir GUI indisponível
+function openUnavailable(){
+    document.getElementById('unavailable-gui').classList.add('active');
+}
+
+// Fechar GUI
+function closeUnavailable(){
+    document.getElementById('unavailable-gui').classList.remove('active');
+}
+</script>
+
+</body>
+</html>
