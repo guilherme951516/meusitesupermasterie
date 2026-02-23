@@ -1,188 +1,185 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Jogo 2D Platformer - PC e Mobile</title>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script><grok:render card_id="15195b" card_type="citation_card" type="render_inline_citation"><argument name="citation_id">1</argument></grok:render><grok:render card_id="56ea43" card_type="citation_card" type="render_inline_citation"><argument name="citation_id">72</argument></grok:render>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprite Animation Online</title>
+
+<style>
+body{
+    margin:0;
+    background:#000;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+    font-family:Arial;
+}
+
+canvas{
+    background:#111;
+    border:2px solid #333;
+    max-width:100%;
+}
+
+.controls{
+    margin-top:15px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+}
+
+button{
+    padding:10px 15px;
+    font-size:16px;
+    border:none;
+    border-radius:8px;
+    background:#444;
+    color:white;
+}
+
+button:active{
+    background:#666;
+}
+</style>
 </head>
+
 <body>
+
+<canvas id="game" width="256" height="256"></canvas>
+
+<div class="controls">
+    <button onclick="setAnim('idle')">Parado</button>
+    <button onclick="setAnim('walk')">Andando</button>
+    <button onclick="setAnim('run')">Correndo</button>
+    <button onclick="jump()">Pular</button>
+</div>
+
 <script>
-var config = {
-    type: Phaser.AUTO,
-    width: 1024,
-    height: 768,
-    scale: {
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH
-    },
-    physics: {
-        default: 'arcade',
-        arcade: {
-            gravity: { y: 1000 },
-            debug: false
-        }
-    },
-    scene: [ MenuScene, GameScene ]
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const spriteImage = new Image();
+spriteImage.src = "sprites.png"; // coloque sua sprite aqui
+
+const frameWidth = 64;
+const frameHeight = 64;
+
+let currentAnimation = "idle";
+let frameX = 0;
+let frameTimer = 0;
+let frameInterval = 100;
+
+let player = {
+    x: 96,
+    y: 150,
+    vy: 0,
+    jumping: false
 };
 
-var game = new Phaser.Game(config);
+const animations = {
+    idle: { row: 0, frames: 10, speed: 120 },
+    walk: { row: 1, frames: 11, speed: 90 },
+    run:  { row: 2, frames: 10, speed: 60 },
+    jump: { row: 3, frames: 9,  speed: 80 }
+};
 
-class MenuScene extends Phaser.Scene {
-    constructor() {
-        super({ key: 'MenuScene' });
-    }
-
-    create() {
-        // Título
-        this.add.text(512, 200, 'JOGO 2D COMPLETO', { fontSize: '64px', fill: '#fff', fontFamily: 'Arial' }).setOrigin(0.5);
-
-        // Botão Iniciar
-        let startButton = this.add.text(512, 400, 'INICIAR JOGO', { fontSize: '48px', fill: '#0f0', fontFamily: 'Arial' }).setOrigin(0.5).setPadding(20).setStyle({ backgroundColor: '#000', border: '4px solid #0f0' }).setInteractive();
-
-        startButton.on('pointerdown', () => {
-            this.scene.start('GameScene');
-        });
-
-        // Instruções
-        this.add.text(512, 550, 'PC: Setas | Mobile: Joystick', { fontSize: '32px', fill: '#fff', fontFamily: 'Arial' }).setOrigin(0.5);
-
-        // Lock landscape se mobile
-        if (screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('landscape-primary').catch(err => console.log('Lock falhou:', err));
-        }<grok:render card_id="961d9d" card_type="citation_card" type="render_inline_citation"><argument name="citation_id">63</argument></grok:render><grok:render card_id="132d6c" card_type="citation_card" type="render_inline_citation"><argument name="citation_id">70</argument></grok:render>
+function setAnim(name){
+    if(name !== "jump"){
+        currentAnimation = name;
     }
 }
 
-class GameScene extends Phaser.Scene {
-    constructor() {
-        super({ key: 'GameScene' });
+function jump(){
+    if(!player.jumping){
+        player.jumping = true;
+        player.vy = -12;
+        currentAnimation = "jump";
     }
+}
 
-    preload() {
-        // Plugin Joystick do REX (de X/Twitter via GitHub, usado em platformers mobile)<grok:render card_id="23510b" card_type="citation_card" type="render_inline_citation"><argument name="citation_id">72</argument></grok:render>
-        this.load.plugin('rexVirtualJoystickPlugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexvirtualjoystickplugin.min.js', true);
+function update(deltaTime){
 
-        // Assets oficiais Phaser (exemplo platformer completo pesquisado, dude sheet com walk/jump de posts X sobre Phaser)<grok:render card_id="0bbfc4" card_type="citation_card" type="render_inline_citation"><argument name="citation_id">56</argument></grok:render>
-        this.load.image('sky', 'https://labs.phaser.io/assets/skies/space3.png');
-        this.load.image('ground', 'https://labs.phaser.io/assets/platform.png');
-        this.load.image('star', 'https://labs.phaser.io/assets/star.png');
-        this.load.spritesheet('dude', 'https://labs.phaser.io/assets/sprites/dude.png', { frameWidth: 32, frameHeight: 48 });
-    }
+    const anim = animations[currentAnimation];
+    frameInterval = anim.speed;
 
-    create() {
-        // Cenário (bg simples de Phaser labs)
-        this.add.image(512, 384, 'sky');
-
-        // Plataformas (colisão)
-        let platforms = this.physics.add.staticGroup();
-        platforms.create(512, 700, 'ground').setScale(3).refreshBody();
-        platforms.create(750, 550, 'ground');
-        platforms.create(200, 450, 'ground');
-        platforms.create(100, 250, 'ground').setScale(0.5).refreshBody();
-
-        // Player (andar, pular - animações fluídas walk left/right, idle)
-        this.player = this.physics.add.sprite(200, 500, 'dude');
-        this.player.setBounce(0.2);
-        this.player.setCollideWorldBounds(true);
-        this.physics.add.collider(this.player, platforms);
-
-        // Animações (walk left/right = correr, turn = idle)
-        this.anims.create({
-            key: 'left',
-            frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
-            frameRate: 12,
-            repeat: -1
-        });
-        this.anims.create({
-            key: 'turn',
-            frames: [ { key: 'dude', frame: 4 } ],
-            frameRate: 20
-        });
-        this.anims.create({
-            key: 'right',
-            frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
-            frameRate: 12,
-            repeat: -1
-        });
-
-        // Estrelas (cenário/UI interativo)
-        let stars = this.physics.add.group({
-            key: 'star',
-            repeat: 11,
-            setXY: { x: 12, y: 0, stepX: 70 }
-        });
-        stars.children.iterate((child) => child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8)));
-        this.physics.add.collider(stars, platforms);
-        this.physics.add.overlap(this.player, stars, this.collectStar, null, this);
-
-        // Score UI
-        this.score = 0;
-        this.scoreText = this.add.text(16, 16, 'Pontos: 0', { fontSize: '32px', fill: '#fff', fontFamily: 'Arial' });
-
-        // Câmera segue player
-        this.cameras.main.startFollow(this.player);
-
-        // Joystick mobile/PC (force para run speed variável!)
-        this.joystick = this.plugins.get('rexVirtualJoystickPlugin').add(this, { x: 150, y: 600, radius: 100, fixed: true, dir: '8dir' });
-        let cursors = this.joystick.createCursorKeys(); // PC mouse/touch + keyboard compatível
-
-        // Input update (andar/correr com force, pular)
-        this.input.keyboard.on('keydown', (event) => {
-            if (event.code === 'Space' || event.code === 'ArrowUp') {
-                this.jump();
+    if(frameTimer > frameInterval){
+        frameX++;
+        if(frameX >= anim.frames){
+            frameX = 0;
+            if(currentAnimation === "jump"){
+                currentAnimation = "idle";
             }
-        });
-
-        // Update loop para movimento fluido dt auto-Phaser
-        this.time.addEvent({
-            delay: 16, // \~60fps
-            callback: this.handleInput,
-            callbackScope: this,
-            loop: true
-        });
-    }
-
-    handleInput() {
-        let cursors = this.joystick.createCursorKeys();
-        let forceX = this.joystick.forceX;
-        let speed = 200 + Math.abs(forceX) * 2; // Run mais rápido com force joystick!
-
-        if (cursors.left.isDown || forceX < -10) {
-            this.player.setVelocityX(-speed);
-            this.player.anims.play('left', true);
-            this.player.flipX = true;
-        } else if (cursors.right.isDown || forceX > 10) {
-            this.player.setVelocityX(speed);
-            this.player.anims.play('right', true);
-            this.player.flipX = false;
-        } else {
-            this.player.setVelocityX(0);
-            this.player.anims.play('turn');
         }
-
-        // Pular (touch up ou space)
-        if ((cursors.up.isDown || this.joystick.forceY < -20) && this.player.body.touching.down) {
-            this.player.setVelocityY(-600);
-        }
+        frameTimer = 0;
+    } else {
+        frameTimer += deltaTime;
     }
 
-    jump() {
-        if (this.player.body.touching.down) {
-            this.player.setVelocityY(-600);
-        }
-    }
+    // gravidade
+    player.y += player.vy;
+    player.vy += 0.6;
 
-    collectStar(player, star) {
-        star.disableBody(true, true);
-        this.score += 10;
-        this.scoreText.setText('Pontos: ' + this.score);
-    }
-
-    update() {
-        // Plataformas dinâmicas se quiser expandir
+    if(player.y >= 150){
+        player.y = 150;
+        player.vy = 0;
+        player.jumping = false;
     }
 }
+
+function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const anim = animations[currentAnimation];
+
+    ctx.drawImage(
+        spriteImage,
+        frameX * frameWidth,
+        anim.row * frameHeight,
+        frameWidth,
+        frameHeight,
+        player.x,
+        player.y,
+        frameWidth,
+        frameHeight
+    );
+}
+
+let lastTime = 0;
+
+function animate(timeStamp){
+    const deltaTime = timeStamp - lastTime;
+    lastTime = timeStamp;
+
+    update(deltaTime);
+    draw();
+    requestAnimationFrame(animate);
+}
+
+spriteImage.onload = function(){
+    animate(0);
+};
+
+// teclado
+window.addEventListener("keydown", e=>{
+    if(e.key === "ArrowRight"){
+        setAnim("run");
+    }
+    if(e.key === "ArrowLeft"){
+        setAnim("walk");
+    }
+    if(e.key === " "){
+        jump();
+    }
+});
+
+window.addEventListener("keyup", e=>{
+    if(e.key === "ArrowRight" || e.key === "ArrowLeft"){
+        setAnim("idle");
+    }
+});
 </script>
+
 </body>
 </html>
